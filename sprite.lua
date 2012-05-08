@@ -77,12 +77,12 @@ function Gob:draw()
         love.graphics.drawq(
             sprite.image,
             sprite.anim.quads[self.currentFrame],
-            self.x, self.y, self.angle,
+            self.x, self.y, -self.angle,
             sprite.scale.x, sprite.scale.y, sprite.center.x, sprite.center.y)
     else
         love.graphics.draw(
             sprite.image,
-            self.x, self.y, self.angle,
+            self.x, self.y, -self.angle,
             sprite.scale.x, sprite.scale.y, sprite.center.x, sprite.center.y)
     end
 end
