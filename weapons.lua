@@ -88,7 +88,7 @@ function Cannon:draw()
 end
 
 function Cannon:fire(x, y)
-    firedBullets = self.bulletFunc(x, y)
+    firedBullets = self.bulletFunc(self, x, y)
     for _, b in ipairs(firedBullets) do
         b.sprite = self.sprite
         table.insert(self.bullets, b)
@@ -99,7 +99,7 @@ end
 -- the armory
 --
 
-function twin(x, y)
+function twin(cannon, x, y)
     local dist = 4
     return {
         Gob:new({
@@ -117,7 +117,7 @@ function twin(x, y)
     }
 end
 
-function hose(x, y)
+function hose(cannon, x, y)
     local b = Gob:new(
     {
         x = x,
@@ -128,18 +128,24 @@ function hose(x, y)
     return {b}
 end
 
-function hose(x, y)
-    local b = Gob:new(
-    {
-        x = x,
-        y = y,
-        speed = 500 * math.random(75, 125) / 100,
-        angle = math.rad((math.random() * 2 - 1) * 5),
-    })
-    return {b}
+function spread(cannon, x, y)
+    local bullets = {}
+    local count = 5
+    for i = 1, count do
+        local angle = 20 - (math.floor(40 * (i - 1) / (count - 1)))
+        local b = Gob:new(
+        {
+            x = x,
+            y = y,
+            speed = 400,
+            angle = math.rad(angle),
+        })
+        table.insert(bullets, b)
+    end
+    return bullets
 end
 
-function wtf(x, y)
+function wtf(cannon, x, y)
     local bullets = {}
     local count = 50
     for i = 1, count do
@@ -159,6 +165,10 @@ local weapons = {
     Cannon:new({
         fireRate = 10,
         bulletFunc = twin,
+    }),
+    Cannon:new({
+        fireRate = 7,
+        bulletFunc = spread,
     }),
     Cannon:new({
         fireRate = 100,
