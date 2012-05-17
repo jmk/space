@@ -205,7 +205,7 @@ function love.draw()
     love.graphics.setColor(255, 255, 255, 255)
 
     -- draw weapon
-    getWeapon():draw()
+    drawWeapons()
 
     -- draw collectibles
     for _, c in pairs(collectibles) do
@@ -317,7 +317,7 @@ function love.update(dt)
         end
     end
 
-    -- update bullets
+    -- update collectibles
     for c_i, c in pairs(collectibles) do
         c:update(dt)
 
@@ -341,23 +341,10 @@ function love.update(dt)
     -- update enemies
     for s_i, s in pairs(enemies) do
         s:update(dt)
-
-        -- hit check
---        for b_i, b in ipairs(bullets) do
---            if (b:hitGob(s)) then
---                table.remove(bullets, b_i)
---                if (s.hit <= 0) then
---                    s.hit = 20
---                end
---                spawnCollectible(b.x, b.y)
---            end
---        end
     end
 
     -- update weapon
-    local w = getWeapon()
-    w:update(dt, input.fire, player.x, player.y)
-    w:hitGobs(enemies)
+    updateWeapons(dt, input.fire, player.x, player.y)
 end
 
 function love.keypressed(key, unicode)
