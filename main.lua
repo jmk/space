@@ -1,5 +1,6 @@
 require "gob"
 require "sprite"
+require "weapons"
 
 function initStars(width, height)
     local stars = {}
@@ -51,21 +52,6 @@ function spawnCollectible(x, y)
     table.insert(collectibles, c)
 end
 
-function fire()
-    local b = Gob:new(
-    {
-        x = player.x,
-        y = player.y,
-        sprite = sprites.bullet,
-        --        speed = 400,
-        --        angle = 0,  -- radians
-        speed = 500 * math.random(75, 125) / 100,
-        angle = math.rad((math.random() * 2 - 1) * 5),
-
-    })
-    table.insert(bullets, b)
-end
-
 function loadImage(name)
     image = love.graphics.newImage(name)
     image:setFilter("linear", "linear")
@@ -84,7 +70,7 @@ end
 function love.load()
     EPSILON = 1E-3
     time = 0
-    score = 0
+    score = math.floor(math.random() * -1000000)
 
     -- establish scale factor
     scale = 3
@@ -111,10 +97,6 @@ function love.load()
 
     sprites = {
         bg = Sprite:new("images/bg.png"),
-        bullet = Sprite:new("images/bullet.png", {
-            center = { x = 6, y = 2 },
-            hitbox = { x = 0, y = 0, w = 12, h = 5 },
-        }),
         carrot = Sprite:newAnim("images/carrot.png", 5, {
             center = { x = 14, y = 6 },
             hitbox = { x = 9, y = 5, w = 12, h = 3 },
@@ -151,17 +133,11 @@ function love.load()
     avgDeltaY = 0
 
     enableBulletAnim = true
-    bullets = {}
     collectibles = {}
 
     -- init enemies
     enemies = initEnemies(15)
     scatterEnemies()
-
-    -- time the last bullet was fired
-    lastFired = 0
-    fireRate = 100  -- bullets per sec
-    --    fireRate = 15
 
     -- set font
     font = love.graphics.newFont("fonts/easta_seven_condensed.ttf", 8)
@@ -228,11 +204,10 @@ function love.draw()
     -- restore color
     love.graphics.setColor(255, 255, 255, 255)
 
-    -- draw bullets
-    for _, b in pairs(bullets) do
-        b:draw()
-    end
+    -- draw weapon
+    getWeapon():draw()
 
+    -- draw collectibles
     for _, c in pairs(collectibles) do
         c:draw()
     end
@@ -272,8 +247,6 @@ function love.draw()
     love.graphics.setPixelEffect()
 
     -- draw meaningless gibberish
-    --    local bulletCount = 0
-    --    for b in pairs(bullets) do bulletCount = bulletCount + 1 end
     love.graphics.print("SCORE: " .. score, 10, 10, 0, scale, scale)
     --    love.graphics.print("Seiji Ozawa quit, vexing rabid symphonic folk!", 10, 25)
 end
@@ -292,30 +265,13 @@ function love.update(dt)
 
     -- compute time scale
     local t = time
-    local df = 1/fireRate  -- time between bullets
     if slow then
         dt = dt / 4
-        df = df * 4
     end
 
     time = time + dt
 
-    if input.fire then
-        if (t - lastFired > df) then
-            local n = 0
-            for i = 1, (t - lastFired) / df do
-                fire()
-                n = n + 1
-            end
-            lastFired = lastFired + n * df
-        end
-    else
-        -- XXX gross hack
-        lastFired = t
-    end
-
     -- update player
-
     local deltaX, deltaY = getMouseDeltas()
 
     player.currentFrame = 3
@@ -362,21 +318,6 @@ function love.update(dt)
     end
 
     -- update bullets
-    for b_i, b in pairs(bullets) do
-        local dv = b.speed * dt
-        local dx = math.cos(b.angle) * dv
-        local dy = math.sin(b.angle) * dv
-        if enableBulletAnim then
-            b.x = b.x + dx
-            b.y = b.y - dy
-        end
-
-        -- XXX: need to account for bullet size!
-        if b.x < 0 or b.x > screenWidth or b.y < 0 or b.y > screenHeight then
-            table.remove(bullets, b_i)
-        end
-    end
-
     for c_i, c in pairs(collectibles) do
         c:update(dt)
 
@@ -397,21 +338,26 @@ function love.update(dt)
         end
     end
 
-    -- update candy
+    -- update enemies
     for s_i, s in pairs(enemies) do
         s:update(dt)
 
         -- hit check
-        for b_i, b in ipairs(bullets) do
-            if (b:hitGob(s)) then
-                table.remove(bullets, b_i)
-                if (s.hit <= 0) then
-                    s.hit = 20
-                end
-                spawnCollectible(b.x, b.y)
-            end
-        end
+--        for b_i, b in ipairs(bullets) do
+--            if (b:hitGob(s)) then
+--                table.remove(bullets, b_i)
+--                if (s.hit <= 0) then
+--                    s.hit = 20
+--                end
+--                spawnCollectible(b.x, b.y)
+--            end
+--        end
     end
+
+    -- update weapon
+    local w = getWeapon()
+    w:update(dt, input.fire, player.x, player.y)
+    w:hitGobs(enemies)
 end
 
 function love.keypressed(key, unicode)
@@ -431,6 +377,8 @@ function love.keypressed(key, unicode)
         love.event.quit()
     elseif key == "return" then
         warpEffect = love.graphics.newPixelEffect(love.filesystem.read("warp.fs"))
+    elseif key == "tab" then
+        switchWeapon()
     end
 end
 
