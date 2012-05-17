@@ -1,3 +1,4 @@
+require "gob"
 require "sprite"
 
 function initStars(width, height)
