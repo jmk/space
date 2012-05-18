@@ -1,11 +1,27 @@
+local sprites = {
+    bullet = Sprite:new("images/bullet.png", {
+        center = { x = 6, y = 2 },
+        hitbox = { x = 0, y = 0, w = 12, h = 5 },
+    }),
+    missileStatic = Sprite:new("images/missile_static.png", {
+        center = { x = 6, y = 2 },
+        hitbox = { x = 2, y = 0, w = 10, h = 4 },
+    }),
+    missileIgniting = Sprite:new("images/missile_igniting.png", {
+        center = { x = 6, y = 2 },
+        hitbox = { x = 2, y = 0, w = 10, h = 4 },
+    }),
+    missile = Sprite:newAnim("images/missile.png", 3, {
+        center = { x = 6, y = 2 },
+        hitbox = { x = 2, y = 0, w = 10, h = 4 },
+    }),
+}
+
 Cannon = {
     fireRate = 1,   -- bullets per sec
     lastFired = -1, -- time since last fired
     bullets = {},
-    sprite = Sprite:new("images/bullet.png", {
-        center = { x = 6, y = 2 },
-        hitbox = { x = 0, y = 0, w = 12, h = 5 },
-    }),
+    sprite = sprites.bullet,
 
     -- XXX class inheritance would be really handy for this ...
     bulletFunc = nil,
@@ -42,6 +58,9 @@ function Cannon:update(dt, fire, x, y)
         -- XXX: need to account for bullet size!
         if b.x < 0 or b.x > screenWidth or b.y < 0 or b.y > screenHeight then
             table.remove(self.bullets, b_i)
+        elseif b.sprite.anim then
+            -- XXX: hacky way to update animated sprites
+            b:update(dt)
         end
     end
 
@@ -167,7 +186,10 @@ function missileUpdate(bullets, dt)
         -- XXX hack: need to decouple from update rate
         b.speed.y = b.speed.y * 0.99
 
-        if b.age > 0.25 then
+        if b.age > 0.15 and b.age < 0.3 then
+            b.sprite = sprites.missileIgniting
+        elseif b.age > 0.3 then
+            b.sprite = sprites.missile
             b.speed.x = b.speed.x + 2
         end
 
@@ -218,6 +240,7 @@ local weapons = {
         fireRate = 10,
         bulletFunc = missile,
         bulletUpdateFunc = missileUpdate,
+        sprite = sprites.missileStatic,
     }),
     Cannon:new({
         fireRate = 7,
