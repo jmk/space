@@ -2,6 +2,8 @@ require "gob"
 require "sprite"
 require "weapons"
 
+local mathx = require "mathx"
+
 function initStars(width, height)
     local stars = {}
     for i = 1, 100 do
@@ -251,10 +253,6 @@ function love.draw()
     --    love.graphics.print("Seiji Ozawa quit, vexing rabid symphonic folk!", 10, 25)
 end
 
-function sgn(val)
-    return val < 0 and -1 or 1
-end
-
 function love.update(dt)
     -- if paused, bail
     if paused then
@@ -279,7 +277,7 @@ function love.update(dt)
     if avgDeltaY < -EPSILON then
         player.currentFrame = 1
         -- detect case when player changing directions
-    elseif sgn(avgDeltaY) ~= sgn(deltaY) then
+    elseif mathx.sgn(avgDeltaY) ~= mathx.sgn(deltaY) then
         player.currentFrame = 3		
     elseif avgDeltaY > EPSILON then
         player.currentFrame = 5
