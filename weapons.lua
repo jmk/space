@@ -1,3 +1,5 @@
+local mathx = require "mathx"
+
 local sprites = {
     bullet = Sprite:new("images/bullet.png", {
         center = { x = 6, y = 2 },
@@ -173,7 +175,7 @@ function missile(cannon, x, y)
         -- extra data
         age = 0,
     })
-    b.speed.x = math.random(-10, 10)
+    b.speed.x = math.random(-15, 2.5)
     b.speed.y = math.random(75, 125) * lastSgn
     lastSgn = lastSgn * -1
     return {b}
@@ -183,14 +185,13 @@ function missileUpdate(bullets, dt)
     for _, b in pairs(bullets) do
         b.age = b.age + dt
 
-        -- XXX hack: need to decouple from update rate
-        b.speed.y = b.speed.y * 0.99
+        b.speed.y = b.speed.y - (b.speed.y * dt * 4.5)
 
         if b.age > 0.15 and b.age < 0.3 then
             b.sprite = sprites.missileIgniting
         elseif b.age > 0.3 then
             b.sprite = sprites.missile
-            b.speed.x = b.speed.x + 2
+            b.speed.x = b.speed.x + (750 * dt)
         end
 
         b.x = b.x + b.speed.x * dt
