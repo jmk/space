@@ -63,9 +63,9 @@ end
 function setTint(enable, amount)
     if (enable) then
         tintEffect:send("tint", amount)
-        love.graphics.setPixelEffect(tintEffect)
+        love.graphics.setShader(tintEffect)
     else
-        love.graphics.setPixelEffect()
+        love.graphics.setShader()
     end
 end
 
@@ -146,9 +146,9 @@ function love.load()
     love.graphics.setFont(font)
 
     -- init pixel effects (shaders)
-    tintEffect = love.graphics.newPixelEffect(love.filesystem.read("shaders/tint.fs"))
-    blurEffect = love.graphics.newPixelEffect(love.filesystem.read("shaders/blur.fs"))
-    warpEffect = love.graphics.newPixelEffect(love.filesystem.read("shaders/warp.fs"))
+    tintEffect = love.graphics.newShader("shaders/tint.fs")
+    blurEffect = love.graphics.newShader("shaders/blur.fs")
+    warpEffect = love.graphics.newShader("shaders/warp.fs")
 
     -- XXX hack
     blur = false
@@ -161,7 +161,7 @@ function love.load()
 
     -- player input
     love.mouse.setVisible(false)
-    love.mouse.setGrab(true)
+    love.mouse.setGrabbed(true)
     love.mouse.setPosition(screenWidth / 2, screenHeight / 2)
     startX, startY = love.mouse.getPosition()
 end
@@ -237,16 +237,16 @@ function love.draw()
     love.graphics.setCanvas()
 
     if (blur) then
-        love.graphics.setPixelEffect(blurEffect)
+        love.graphics.setShader(blurEffect)
     end
 
     if (warp) then
         warpEffect:send("time", time)
-        love.graphics.setPixelEffect(warpEffect)
+        love.graphics.setShader(warpEffect)
     end
 
     love.graphics.draw(fb, 0, 0, 0, scale, scale)
-    love.graphics.setPixelEffect()
+    love.graphics.setShader()
 
     -- draw meaningless gibberish
     love.graphics.print("SCORE: " .. score, 10, 10, 0, scale, scale)
@@ -361,7 +361,7 @@ function love.keypressed(key, unicode)
     elseif key == "escape" then	
         love.event.quit()
     elseif key == "return" then
-        warpEffect = love.graphics.newPixelEffect(love.filesystem.read("warp.fs"))
+        warpEffect = love.graphics.newShader("warp.fs")
     elseif key == "tab" then
         switchWeapon()
     end

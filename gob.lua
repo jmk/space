@@ -26,7 +26,7 @@ function Gob:draw()
     local sprite = self.sprite
     love.graphics.setColor(255, 255, 255, sprite.opacity * 255)
     if (sprite.anim) then
-        love.graphics.drawq(
+        love.graphics.draw(
         sprite.image,
         sprite.anim.quads[self.currentFrame],
         self.x, self.y, -self.angle,
