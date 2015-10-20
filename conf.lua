@@ -1,7 +1,7 @@
 function love.conf(t)
-    t.screen.height = 600
-    t.screen.width = 1200
-    t.screen.vsync = false -- XXX
+    t.window.height = 600
+    t.window.width = 1200
+    t.window.vsync = false -- XXX
     t.title = "veggie fighter 5000"
 
     -- disable unused modules
